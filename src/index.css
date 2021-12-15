@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+}
+
+* {
+  --primary: #0085FF;
+  --positive: #00E676;
+  --negative: #FF1744;
+  --warning: #FFC400; 
+
+  font-family: 'Roboto', sans-serif;
+}

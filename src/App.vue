@@ -1,32 +1,39 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <Spinner v-if="state === AppState.Loading"/>
+    <Error v-if="state === AppState.Errored" :title="error.title" :subtitle="error.subtitle"/>
   </div>
 </template>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 </style>
+
+<script>
+import Spinner from './components/Spinner.vue'
+import Error from './components/Error.vue'
+import './index.css'
+
+const AppState = {
+  Loading: 0,
+  Errored: 1,
+  ReaderAvailable: 2,
+  ReaderProcessing: 3
+}
+
+export default {
+  components: { Spinner, Error },
+  data: () => ({
+    AppState,
+    state: AppState.Loading,
+    error: { title: '', subtitle: '' }
+  })
+}
+</script>
