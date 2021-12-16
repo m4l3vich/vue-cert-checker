@@ -1,6 +1,29 @@
 <template>
-  <video ref="video"/>
+  <div class="reader">
+    <video ref="video" class="reader__video"/>
+    <div class="reader__overlay">
+      <slot/>
+    </div>
+  </div>
 </template>
+
+<style>
+.reader__video, .reader__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.reader__overlay {
+  z-index: 2;
+}
+
+.reader__video {
+  object-fit: cover;
+}
+</style>
 
 <script>
 import { scanImageData } from 'zbar.wasm'
@@ -13,26 +36,47 @@ export default {
     canvas: document.createElement('canvas')
   }),
 
-  async mounted () {
+  async created () {
     try {
       await this.init()
+      this.$emit('initSuccess')
       this.scan()
     } catch (err) {
-      // TODO
+      this.$emit('initError', err)
       console.error(err)
     }
   },
 
   methods: {
+    verify (obj) {
+      if (!obj) return
+      if (obj.typeName !== 'ZBAR_QRCODE') return
+      this.$emit('read', obj.decode())
+    },
+
     async init () {
+      const aspectRatio = window.screen.width / window.screen.height
+
+      const physWidth = window.screen.width * window.devicePixelRatio
+      const physHeight = window.screen.height * window.devicePixelRatio
+
+      const constraints = {
+        facingMode: 'environment',
+        width: { ideal: physWidth },
+        height: { ideal: physHeight }
+      }
+
+      // Weird stuff but it works
+      if (aspectRatio < 1) {
+        constraints.width.ideal = physHeight
+        constraints.height.ideal = physWidth
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: {
-          facingMode: 'environment',
-          width: { max: 640 },
-          height: { max: 640 }
-        }
+        video: constraints
       })
+      console.log(mediaStream.getVideoTracks()[0].getSettings())
       const video = this.$refs.video
       video.srcObject = mediaStream
       video.setAttribute('playsinline', '')
@@ -44,8 +88,9 @@ export default {
 
     async scan () {
       const video = this.$refs.video
-      const width = video.videoWidth
-      const height = video.videoHeight
+      // Downscale the image to make it easier for scanning
+      const width = video.videoWidth / window.devicePixelRatio
+      const height = video.videoHeight / window.devicePixelRatio
       this.canvas.width = width
       this.canvas.height = height
       const ctx = this.canvas.getContext('2d')
@@ -53,8 +98,7 @@ export default {
       const imgData = ctx.getImageData(0, 0, width, height)
       const res = await scanImageData(imgData)
 
-      // TODO
-      console.log(res)
+      this.verify(res[0])
       await delay(SCAN_INTERVAL)
       this.scan()
     }
