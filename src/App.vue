@@ -4,6 +4,7 @@
     <Error v-if="state === AppState.Errored" :title="error.title" :subtitle="error.subtitle"/>
 
     <Reader
+      :doScan="state === AppState.ReaderAvailable"
       v-show="state === AppState.ReaderAvailable || state === AppState.ReaderProcessing"
       @initError="onReaderErr"
       @initSuccess="onReaderInit"
@@ -68,6 +69,11 @@ export default {
     async onRead (url) {
       this.state = AppState.ReaderProcessing
       this.url = url
+    },
+
+    onCardDismiss () {
+      this.state = AppState.ReaderAvailable
+      this.url = null
     }
   }
 }

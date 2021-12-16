@@ -10,10 +10,11 @@
   "dependencies": {
     "@mdi/font": "^6.5.95",
     "core-js": "^3.6.5",
-    "gosuslugi-cert-checker": "^1.2.2",
+    "gosuslugi-cert-checker": "^1.2.3",
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
+    "vue-worker": "^1.2.1",
     "zbar.wasm": "^2.1.1"
   },
   "devDependencies": {

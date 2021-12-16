@@ -27,13 +27,25 @@
 
 <script>
 import { scanImageData } from 'zbar.wasm'
-const SCAN_INTERVAL = 500
+const SCAN_INTERVAL = 1000
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 export default {
+  props: { doScan: Boolean },
+
   data: () => ({
-    canvas: document.createElement('canvas')
+    dimensions: {
+      aspectRatio: window.screen.width / window.screen.height,
+      physical: {
+        width: window.screen.width * window.devicePixelRatio,
+        height: window.screen.height * window.devicePixelRatio
+      },
+      logical: {
+        width: window.screen.width,
+        height: window.screen.height
+      }
+    }
   }),
 
   async created () {
@@ -51,25 +63,21 @@ export default {
     verify (obj) {
       if (!obj) return
       if (obj.typeName !== 'ZBAR_QRCODE') return
+      if (!this.doScan) return
       this.$emit('read', obj.decode())
     },
 
     async init () {
-      const aspectRatio = window.screen.width / window.screen.height
-
-      const physWidth = window.screen.width * window.devicePixelRatio
-      const physHeight = window.screen.height * window.devicePixelRatio
-
       const constraints = {
         facingMode: 'environment',
-        width: { ideal: physWidth },
-        height: { ideal: physHeight }
+        width: { ideal: this.dimensions.physical.width },
+        height: { ideal: this.dimensions.physical.height }
       }
 
       // Weird stuff but it works
-      if (aspectRatio < 1) {
-        constraints.width.ideal = physHeight
-        constraints.height.ideal = physWidth
+      if (this.dimensions.aspectRatio < 1) {
+        constraints.width.ideal = this.dimensions.physical.height
+        constraints.height.ideal = this.dimensions.physical.width
       }
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -86,17 +94,25 @@ export default {
       })
     },
 
+    async read ({ video, width, height }) {
+      const canvas = document.createElement('canvas')
+      canvas.width = this.dimensions.logical.width
+      canvas.height = this.dimensions.logical.height
+
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(video, 0, 0, width, height)
+
+      const imgData = ctx.getImageData(0, 0, width, height)
+      return scanImageData(imgData)
+    },
+
     async scan () {
       const video = this.$refs.video
-      // Downscale the image to make it easier for scanning
-      const width = video.videoWidth / window.devicePixelRatio
-      const height = video.videoHeight / window.devicePixelRatio
-      this.canvas.width = width
-      this.canvas.height = height
-      const ctx = this.canvas.getContext('2d')
-      ctx.drawImage(video, 0, 0, width, height)
-      const imgData = ctx.getImageData(0, 0, width, height)
-      const res = await scanImageData(imgData)
+      const { width, height } = this.dimensions.logical
+
+      const res = await this.$worker.run(
+        this.read, [{ video, width, height }]
+      )
 
       this.verify(res[0])
       await delay(SCAN_INTERVAL)
