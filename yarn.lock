@@ -4404,10 +4404,10 @@ globby@^9.2.0:
     pify "^4.0.1"
     slash "^2.0.0"
 
-gosuslugi-cert-checker@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/gosuslugi-cert-checker/-/gosuslugi-cert-checker-1.2.3.tgz#e9b5a9266bd9398f58cc8770db7f1e1f981695ef"
-  integrity sha512-HxtLP1L6Xk0wmDJgak4VtZOuO23SY7vRND5TjS3yAahXKYx7PkluvYpR8QUA4Ls2EGpkXYOH9whzQPNfG/EPTA==
+gosuslugi-cert-checker@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.npmjs.org/gosuslugi-cert-checker/-/gosuslugi-cert-checker-1.2.4.tgz#24a8b6340df652ad0395e4d97bdcd8520970a003"
+  integrity sha512-lT+vc6KdtOqwvCCoCfNc63krltDZzwMu7KASaGa+X1dwr/OBrsFOhPfO41z3bhSKcWq91lsy8ku7bwASmAs1cg==
   dependencies:
     axios "^0.24.0"
     date-fns "^2.27.0"

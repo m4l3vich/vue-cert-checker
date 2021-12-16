@@ -48,7 +48,10 @@ export default {
   data: () => ({
     AppState,
     state: AppState.Loading,
-    error: { title: '', subtitle: '' },
+    error: {
+      title: 'Ошибка доступа к камере',
+      subtitle: 'Не удалось получить доступ к камере. Проверьте подключение камеры и разрешите приложению её использование.'
+    },
     url: null
   }),
 

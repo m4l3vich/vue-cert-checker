@@ -1,5 +1,5 @@
 <template>
-  <div class="cert-type" v-text="typeStr"/>
+  <div class="cert-type" v-text="typeStr" v-show="!!type"/>
 </template>
 
 <style>
@@ -10,6 +10,7 @@
   color: black;
   padding: 8px 12px;
   border-radius: 999px;
+  background: white;
 }
 </style>
 

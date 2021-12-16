@@ -4,10 +4,10 @@
       <Icon i="close"/>
     </button>
     <div :class="cardClass">
-      <Spinner v-if="state === CardState.Processing"/>
-      <Icon v-else :i="cardIcon"/>
+      <Spinner small v-if="state === CardState.Processing"/>
+      <Icon large v-else :i="cardIcon"/>
 
-      <CertificateType v-if="cert" :type="cert.type"/>
+      <CertificateType v-if="cert && state === CardState.Valid" :type="cert.type"/>
 
       <h1 class="card__header" v-if="state === CardState.Processing">
         Проверка...
@@ -75,8 +75,8 @@
   align-items: center;
   gap: 16px;
 
-  transition: background 0.5s ease-in-out,
-              color 0.5s ease-in-out,
+  transition: background 0.2s ease-in-out,
+              color 0.2s ease-in-out,
               transform 0.5s ease-in-out;
 
   box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.25),
@@ -134,6 +134,7 @@ import CertificateType from './CertificateType.vue'
 import Spinner from './Spinner.vue'
 import Icon from './Icon.vue'
 import { EpguCertificate } from 'gosuslugi-cert-checker/build/index.js'
+import * as errors from 'gosuslugi-cert-checker/build/utils/errors.js'
 
 const CardState = {
   Dismissed: -1,
@@ -157,13 +158,10 @@ const cardIcon = {
   [CardState.Warning]: 'alert'
 }
 
-const invalidCertErr = {
+const errStrings = {
   InvalidStr: 'Некорректный QR-код',
   Expired: 'Истёк срок действия',
-  PositiveTest: 'Положительный тест'
-}
-
-const nonCertErr = {
+  PositiveTest: 'Положительный тест',
   ConnectionErr: 'Проверьте Интернет-соединение.',
   ServiceUnavailable: 'Сервис Госуслуги недоступен.',
   Unknown: 'Произошла неизвестная ошибка.'
@@ -205,7 +203,9 @@ export default {
       this.state = CardState.Dismissed
       this.errorStr = null
       this.cert = null
-      this.$emit('dismiss')
+
+      // Let the animation end
+      setTimeout(() => this.$emit('dismiss'), 500)
     },
 
     async process () {
@@ -215,13 +215,42 @@ export default {
       try {
         this.cert = await EpguCertificate.fetch(url)
 
+        if (this.cert.expired) throw new Error('expired')
+        if (!this.cert.status && this.cert.type === 'COVID_TEST') throw new Error('positive_test')
+        if (!this.cert.status) throw new Error('status')
+
         // Dismissed in the middle of processing
         if (this.state === CardState.Dismissed) return
         this.state = CardState.Valid
-      } catch (e) {
+      } catch (err) {
+        console.dir(err)
+
         this.state = CardState.Invalid
-        this.errorStr = invalidCertErr.InvalidStr
-        console.error(e)
+        if (err instanceof errors.InvalidUrlError) {
+          this.errorStr = errStrings.InvalidStr; return
+        }
+        if (err instanceof errors.CertNotFoundError) {
+          this.errorStr = errStrings.InvalidStr; return
+        }
+        if (err.message === 'status') {
+          this.errorStr = errStrings.InvalidStr; return
+        }
+        if (err.message === 'expired') {
+          this.errorStr = errStrings.Expired; return
+        }
+        if (err.message === 'positive_test') {
+          this.errorStr = errStrings.PositiveTest; return
+        }
+
+        this.state = CardState.Warning
+        if (err instanceof errors.EpguApiInternalError) {
+          this.errorStr = errStrings.ServiceUnavailable; return
+        }
+        if (err.isAxiosError) {
+          this.errorStr = errStrings.ConnectionErr; return
+        }
+
+        this.errorStr = errStrings.Unknown
       }
     }
   }

@@ -35,6 +35,7 @@ export default {
   props: { doScan: Boolean },
 
   data: () => ({
+    ctx: null,
     dimensions: {
       aspectRatio: window.screen.width / window.screen.height,
       physical: {
@@ -49,6 +50,12 @@ export default {
   }),
 
   async created () {
+    const canvas = document.createElement('canvas')
+    canvas.width = this.dimensions.logical.width
+    canvas.height = this.dimensions.logical.height
+
+    this.ctx = canvas.getContext('2d')
+
     try {
       await this.init()
       this.$emit('initSuccess')
@@ -94,29 +101,18 @@ export default {
       })
     },
 
-    async read ({ video, width, height }) {
-      const canvas = document.createElement('canvas')
-      canvas.width = this.dimensions.logical.width
-      canvas.height = this.dimensions.logical.height
-
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(video, 0, 0, width, height)
-
-      const imgData = ctx.getImageData(0, 0, width, height)
-      return scanImageData(imgData)
-    },
-
     async scan () {
-      const video = this.$refs.video
-      const { width, height } = this.dimensions.logical
+      while (true) {
+        const video = this.$refs.video
+        const { width, height } = this.dimensions.logical
 
-      const res = await this.$worker.run(
-        this.read, [{ video, width, height }]
-      )
+        this.ctx.drawImage(video, 0, 0, width, height)
+        const imgData = this.ctx.getImageData(0, 0, width, height)
+        const res = await scanImageData(imgData)
 
-      this.verify(res[0])
-      await delay(SCAN_INTERVAL)
-      this.scan()
+        this.verify(res[0])
+        await delay(SCAN_INTERVAL)
+      }
     }
   }
 }
