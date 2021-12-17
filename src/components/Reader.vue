@@ -1,6 +1,6 @@
 <template>
   <div class="reader">
-    <video ref="video" class="reader__video"/>
+    <video id="camera-video" class="reader__video"/>
     <div class="reader__overlay">
       <slot/>
     </div>
@@ -26,10 +26,8 @@
 </style>
 
 <script>
-import { scanImageData } from 'zbar.wasm'
+import { Scanner } from '../scanner.js'
 const SCAN_INTERVAL = 1000
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 export default {
   props: { doScan: Boolean },
@@ -49,7 +47,7 @@ export default {
     }
   }),
 
-  async created () {
+  async beforeMount () {
     const canvas = document.createElement('canvas')
     canvas.width = this.dimensions.logical.width
     canvas.height = this.dimensions.logical.height
@@ -59,21 +57,26 @@ export default {
     try {
       await this.init()
       this.$emit('initSuccess')
-      this.scan()
     } catch (err) {
       this.$emit('initError', err)
-      console.error(err)
+      return console.error(err)
+    }
+
+    this.scanner = new Scanner('#camera-video', this.dimensions.physical)
+    this.scanner.onRead = obj => this.$emit('read', obj.decode())
+    console.log(this.scanner)
+
+    if (this.doScan) this.scanner.startScanning(SCAN_INTERVAL)
+  },
+
+  watch: {
+    doScan (val) {
+      if (val) this.scanner.startScanning(SCAN_INTERVAL)
+      else this.scanner.stopScanning()
     }
   },
 
   methods: {
-    verify (obj) {
-      if (!obj) return
-      if (obj.typeName !== 'ZBAR_QRCODE') return
-      if (!this.doScan) return
-      this.$emit('read', obj.decode())
-    },
-
     async init () {
       const constraints = {
         facingMode: 'environment',
@@ -91,28 +94,15 @@ export default {
         audio: false,
         video: constraints
       })
-      console.log(mediaStream.getVideoTracks()[0].getSettings())
-      const video = this.$refs.video
+
+      const video = document.querySelector('#camera-video')
       video.srcObject = mediaStream
       video.setAttribute('playsinline', '')
       video.play()
+
       await new Promise(resolve => {
         video.onloadedmetadata = resolve
       })
-    },
-
-    async scan () {
-      while (true) {
-        const video = this.$refs.video
-        const { width, height } = this.dimensions.logical
-
-        this.ctx.drawImage(video, 0, 0, width, height)
-        const imgData = this.ctx.getImageData(0, 0, width, height)
-        const res = await scanImageData(imgData)
-
-        this.verify(res[0])
-        await delay(SCAN_INTERVAL)
-      }
     }
   }
 }

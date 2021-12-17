@@ -2,7 +2,7 @@
   <div class="error">
     <h1 class="error__title" v-text="title"/>
     <h2 class="error__subtitle" v-text="subtitle"/>
-    <button class="error__btn" @click="action">Ещё раз</button>
+    <button class="error__btn" @click="action">Перезапустить</button>
   </div>
 </template>
 
@@ -13,6 +13,7 @@
   gap: 16px;
   justify-content: center;
   align-items: center;
+  text-align: center;
 }
 
 .error__title {
