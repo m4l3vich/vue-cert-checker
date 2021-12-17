@@ -4,15 +4,15 @@ import { scanImageData, ImageScanner } from 'zbar.wasm'
 import { ZBarSymbolType, ZBarConfigType } from 'zbar.wasm/dist/enum.js'
 
 export class Scanner {
-  constructor (selector, { width, height }) {
+  constructor (selector, { width, height } = {}) {
     this.video = document.querySelector(selector)
     if (!(this.video instanceof HTMLVideoElement)) {
       throw new Error('Passed element is not HTMLVideoElement')
     }
 
     const canvas = document.createElement('canvas')
-    canvas.width = width || this.video.width
-    canvas.height = height || this.video.height
+    canvas.width = width || this.video.videoWidth
+    canvas.height = height || this.video.videoHeight
     this.size = { width: canvas.width, height: canvas.height }
 
     this.ctx = canvas.getContext('2d')
