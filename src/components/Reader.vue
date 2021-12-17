@@ -27,46 +27,33 @@
 
 <script>
 import { Scanner } from '../scanner.js'
-const SCAN_INTERVAL = 1000
+const SCAN_INTERVAL = 500
 
 export default {
   props: { doScan: Boolean },
 
   data: () => ({
-    ctx: null,
     dimensions: {
       aspectRatio: window.screen.width / window.screen.height,
       physical: {
         width: window.screen.width * window.devicePixelRatio,
         height: window.screen.height * window.devicePixelRatio
       },
-      logical: {
-        width: window.screen.width,
-        height: window.screen.height
+      half: {
+        width: (window.screen.width * window.devicePixelRatio) / 2,
+        height: (window.screen.height * window.devicePixelRatio) / 2
       }
     }
   }),
 
   async beforeMount () {
-    const canvas = document.createElement('canvas')
-    canvas.width = this.dimensions.logical.width
-    canvas.height = this.dimensions.logical.height
-
-    this.ctx = canvas.getContext('2d')
-
     try {
       await this.init()
       this.$emit('initSuccess')
     } catch (err) {
       this.$emit('initError', err)
-      return console.error(err)
+      console.error(err)
     }
-
-    this.scanner = new Scanner('#camera-video', this.dimensions.physical)
-    this.scanner.onRead = obj => this.$emit('read', obj.decode())
-    console.log(this.scanner)
-
-    if (this.doScan) this.scanner.startScanning(SCAN_INTERVAL)
   },
 
   watch: {
@@ -80,14 +67,14 @@ export default {
     async init () {
       const constraints = {
         facingMode: 'environment',
-        width: { ideal: this.dimensions.physical.width },
-        height: { ideal: this.dimensions.physical.height }
+        width: { ideal: this.dimensions.half.width },
+        height: { ideal: this.dimensions.half.height }
       }
 
       // Weird stuff but it works
       if (this.dimensions.aspectRatio < 1) {
-        constraints.width.ideal = this.dimensions.physical.height
-        constraints.height.ideal = this.dimensions.physical.width
+        constraints.width.ideal = this.dimensions.half.height
+        constraints.height.ideal = this.dimensions.half.width
       }
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -103,6 +90,11 @@ export default {
       await new Promise(resolve => {
         video.onloadedmetadata = resolve
       })
+
+      this.scanner = new Scanner('#camera-video')
+      this.scanner.onRead = obj => this.$emit('read', obj.decode())
+
+      if (this.doScan) this.scanner.startScanning(SCAN_INTERVAL)
     }
   }
 }
