@@ -1,6 +1,6 @@
 <template>
   <div class="fns">
-    <div class="fns__btns-container">
+    <div :class="containerClass">
       <button class="fns__btn-flash" @click="switchFlash">
         <Icon v-if="flash" small i="flash-off" primary/>
         <Icon v-else small i="flash"/>
@@ -18,6 +18,10 @@
 .fns {
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+
   padding: 16px;
   box-sizing: border-box;
 
@@ -30,11 +34,21 @@
 .fns__btns-container {
   display: flex;
   align-items: center;
+  z-index: 1;
+
   overflow: hidden;
   border-radius: 99px;
+
+  transform: translateY(0px);
+  transition: transform 0.3s ease-in-out;
+
   background: white;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.25),
               0px 4px 28px rgba(0, 0, 0, 0.25);
+}
+
+.fns__btns-container_hidden {
+  transform: translateY(100px);
 }
 
 .fns__btn-flash, .fns__btn-fullscreen {
@@ -61,11 +75,19 @@ import Icon from './Icon.vue'
 
 export default {
   components: { Icon },
+  props: { show: Boolean },
 
   data: () => ({
     flash: false,
     fullscreen: !!document.fullscreenElement
   }),
+
+  computed: {
+    containerClass () {
+      if (this.show) return 'fns__btns-container'
+      else return 'fns__btns-container fns__btns-container_hidden'
+    }
+  },
 
   methods: {
     switchFullscreen () {

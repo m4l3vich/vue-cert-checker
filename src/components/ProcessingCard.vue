@@ -1,9 +1,12 @@
 <template>
-  <div class="card" @click.self="dismiss">
+  <div class="card">
+    <div :class="overlayClass"/>
+
     <button class="card__dismiss" @click="dismiss" v-if="state !== CardState.Dismissed">
       <Icon i="close"/>
     </button>
-    <div :class="cardClass">
+
+    <div :class="sheetClass">
       <Spinner small v-if="state === CardState.Processing"/>
       <Icon large v-else :i="cardIcon"/>
 
@@ -40,7 +43,9 @@
 .card {
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 75%);
+  position: absolute;
+  top: 0;
+  left: 0;
 
   display: flex;
   flex-direction: column;
@@ -50,6 +55,25 @@
 
   padding: 24px;
   box-sizing: border-box;
+  overflow-y: hidden;
+}
+
+.card__overlay {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.5) 75%);
+
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.card__overlay-hidden {
+  opacity: 0;
 }
 
 .card__dismiss {
@@ -59,12 +83,8 @@
   filter: drop-shadow(0px 0px 8px rgba(0, 0, 0, 0.5));
 }
 
-.card__container_dismissed,
-.card__container_processing,
-.card__container_valid,
-.card__container_invalid,
-.card__container_warning {
-  width: min(100%, 400px);
+.card__sheet {
+  width: 100%;
   border-radius: 16px;
 
   padding: 24px;
@@ -84,27 +104,33 @@
               0px -12px 32px rgba(0, 0, 0, 0.25);
 }
 
-.card__container_dismissed,
-.card__container_processing,
-.card__container_warning {
+@media screen and (min-width: 600px) {
+  .card__sheet {
+    width: 400px;
+  }
+}
+
+.card__sheet_dismissed,
+.card__sheet_processing,
+.card__sheet_warning {
   color: black;
 }
 
-.card__container_valid,
-.card__container_invalid {
+.card__sheet_valid,
+.card__sheet_invalid {
   color: white;
 }
 
-.card__container_dismissed,
-.card__container_processing {
+.card__sheet_dismissed,
+.card__sheet_processing {
   background: white;
 }
 
-.card__container_valid { background: var(--positive) }
-.card__container_invalid { background: var(--negative) }
-.card__container_warning { background: var(--warning) }
+.card__sheet_valid { background: var(--positive) }
+.card__sheet_invalid { background: var(--negative) }
+.card__sheet_warning { background: var(--warning) }
 
-.card__container_dismissed {
+.card__sheet_dismissed {
   background: transparent;
   transform: translateY(100vh);
 }
@@ -179,8 +205,12 @@ export default {
   }),
 
   computed: {
-    cardClass () {
-      return `card__container_${cardClass[this.state]}`
+    sheetClass () {
+      return `card__sheet card__sheet_${cardClass[this.state]}`
+    },
+    overlayClass () {
+      if (this.state === CardState.Dismissed) return 'card__overlay card__overlay-hidden'
+      else return 'card__overlay'
     },
     cardIcon () {
       return cardIcon[this.state]

@@ -5,13 +5,14 @@
 
     <Reader
       :doScan="state === AppState.ReaderAvailable"
-      v-show="state === AppState.ReaderAvailable || state === AppState.ReaderProcessing"
       @initError="onReaderErr"
       @initSuccess="onReaderInit"
       @read="onRead"
     >
-      <ReaderFunctions v-if="state === AppState.ReaderAvailable"/>
-      <ProcessingCard v-if="state === AppState.ReaderProcessing" @dismiss="onCardDismiss" :url="url"/>
+      <template v-if="state === AppState.ReaderAvailable || state === AppState.ReaderProcessing">
+        <ReaderFunctions :show="state === AppState.ReaderAvailable"/>
+        <ProcessingCard @dismiss="onCardDismiss" :url="url"/>
+      </template>
     </Reader>
   </div>
 </template>
@@ -71,7 +72,7 @@ export default {
 
     async onRead (url) {
       this.state = AppState.ReaderProcessing
-      this.url = url
+      this.$nextTick(() => { this.url = url })
     },
 
     onCardDismiss () {

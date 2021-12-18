@@ -7,6 +7,7 @@
   font-size: 32px;
   width: 32px;
   height: 32px;
+  user-select: none;
 }
 
 .icon.icon_small {
