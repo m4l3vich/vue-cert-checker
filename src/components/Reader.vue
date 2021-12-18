@@ -26,7 +26,8 @@
 </style>
 
 <script>
-import { Scanner } from '../scanner.js'
+import { Scanner } from '../lib/scanner.js'
+import { initCamera, CameraInitError, CameraErrCode } from '../lib/camera.js'
 const SCAN_INTERVAL = 500
 
 export default {
@@ -34,67 +35,33 @@ export default {
 
   data: () => ({
     dimensions: {
-      aspectRatio: window.screen.width / window.screen.height,
-      physical: {
-        width: window.screen.width * window.devicePixelRatio,
-        height: window.screen.height * window.devicePixelRatio
-      },
-      half: {
-        width: (window.screen.width * window.devicePixelRatio) / 2,
-        height: (window.screen.height * window.devicePixelRatio) / 2
-      }
+      // Use half of screen's physical size for good
+      // performance and camera feed quality balance
+      width: (window.screen.width * window.devicePixelRatio) / 2,
+      height: (window.screen.height * window.devicePixelRatio) / 2
     }
   }),
 
-  async beforeMount () {
+  async mounted () {
     try {
-      await this.init()
-      this.$emit('initSuccess')
-    } catch (err) {
-      this.$emit('initError', err)
-      console.error(err)
+      await initCamera('#camera-video', this.dimensions)
+    } catch (e) {
+      console.error(e)
+      if (!(e instanceof CameraInitError)) return this.$emit('initError', CameraErrCode.Unknown)
+      return this.$emit('initError', e.type)
     }
+
+    this.scanner = new Scanner('#camera-video')
+    this.scanner.onRead = obj => this.$emit('read', obj.decode())
+
+    if (this.doScan) this.scanner.startScanning(SCAN_INTERVAL)
+    this.$emit('initSuccess')
   },
 
   watch: {
     doScan (val) {
       if (val) this.scanner.startScanning(SCAN_INTERVAL)
       else this.scanner.stopScanning()
-    }
-  },
-
-  methods: {
-    async init () {
-      const constraints = {
-        facingMode: 'environment',
-        width: { ideal: this.dimensions.half.width },
-        height: { ideal: this.dimensions.half.height }
-      }
-
-      // Weird stuff but it works
-      if (this.dimensions.aspectRatio < 1) {
-        constraints.width.ideal = this.dimensions.half.height
-        constraints.height.ideal = this.dimensions.half.width
-      }
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: constraints
-      })
-
-      const video = document.querySelector('#camera-video')
-      video.srcObject = mediaStream
-      video.setAttribute('playsinline', '')
-      video.play()
-
-      await new Promise(resolve => {
-        video.onloadedmetadata = resolve
-      })
-
-      this.scanner = new Scanner('#camera-video')
-      this.scanner.onRead = obj => this.$emit('read', obj.decode())
-
-      if (this.doScan) this.scanner.startScanning(SCAN_INTERVAL)
     }
   }
 }
