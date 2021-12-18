@@ -137,11 +137,11 @@ import { EpguCertificate } from 'gosuslugi-cert-checker/build/index.js'
 import * as errors from 'gosuslugi-cert-checker/build/utils/errors.js'
 
 const CardState = {
-  Dismissed: -1,
-  Processing: 0,
-  Valid: 1,
-  Invalid: 2,
-  Warning: 3
+  Dismissed: Symbol('Dismissed'),
+  Processing: Symbol('Processing'),
+  Valid: Symbol('Valid'),
+  Invalid: Symbol('Invalid'),
+  Warning: Symbol('Warning')
 }
 
 const cardClass = {
