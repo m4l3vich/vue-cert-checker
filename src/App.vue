@@ -35,6 +35,7 @@ import Error from './components/Error.vue'
 import Reader from './components/Reader.vue'
 import ReaderFunctions from './components/ReaderFunctions.vue'
 import ProcessingCard from './components/ProcessingCard.vue'
+import { CameraErrCode } from './lib/camera.js'
 import './index.css'
 
 const AppState = {
@@ -44,15 +45,35 @@ const AppState = {
   ReaderProcessing: 3
 }
 
+const CameraErrorStr = {
+  [CameraErrCode.OldBrowser]: {
+    title: 'Ваш браузер устарел',
+    subtitle: 'Обновите браузер до последней версии и повторите попытку.'
+  },
+  [CameraErrCode.PermissionDenied]: {
+    title: 'Нет доступа к камере',
+    subtitle: 'Вы запретили доступ к камере. Для использования приложения разрешите доступ к камере.'
+  },
+  [CameraErrCode.NoCamera]: {
+    title: 'Камера не найдена',
+    subtitle: 'На вашем устройстве не найдена камера. Проверьте её подключение и повторите попытку.'
+  },
+  [CameraErrCode.CameraBusy]: {
+    title: 'Камера уже используется',
+    subtitle: 'Другое приложение или веб-страница уже использует камеру вашего устройства. Закройте это приложение и повторите попытку.'
+  },
+  [CameraErrCode.Unknown]: {
+    title: 'Ошибка доступа к камере',
+    subtitle: 'Не удалось получить доступ к камере из-за неизвестной ошибки. Проверьте подключение камеры и разрешите приложению её использование.'
+  }
+}
+
 export default {
   components: { Spinner, Error, Reader, ReaderFunctions, ProcessingCard },
   data: () => ({
     AppState,
     state: AppState.Loading,
-    error: {
-      title: 'Ошибка доступа к камере',
-      subtitle: 'Не удалось получить доступ к камере. Проверьте подключение камеры и разрешите приложению её использование.'
-    },
+    error: CameraErrorStr[CameraErrCode.Unknown],
     url: null
   }),
 
@@ -62,8 +83,9 @@ export default {
   },
 
   methods: {
-    onReaderErr () {
+    onReaderErr (code) {
       this.state = AppState.Errored
+      this.error = CameraErrorStr[code]
     },
 
     onReaderInit () {
