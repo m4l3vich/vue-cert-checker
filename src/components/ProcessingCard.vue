@@ -1,39 +1,41 @@
 <template>
-  <div class="card">
-    <div :class="overlayClass"/>
+  <div :class="containerClass">
+    <div class="card__overlay"/>
 
-    <button class="card__dismiss" @click="dismiss" v-if="state !== CardState.Dismissed">
-      <Icon i="close"/>
-    </button>
+    <div class="card__items">
+      <button class="card__dismiss-btn" @click="dismiss">
+        <Icon i="close"/>
+      </button>
 
-    <div :class="sheetClass">
-      <Spinner small v-if="state === CardState.Processing"/>
-      <Icon large v-else :i="cardIcon"/>
+      <div :class="sheetClass">
+        <Spinner small v-if="state === CardState.Processing"/>
+        <Icon large v-else :i="cardIcon"/>
 
-      <CertificateType v-if="cert && state === CardState.Valid" :type="cert.type"/>
+        <CertificateType v-if="cert && state === CardState.Valid" :type="cert.type"/>
 
-      <h1 class="card__header" v-if="state === CardState.Processing">
-        Проверка...
-      </h1>
-
-      <div class="card__multiline" v-if="state === CardState.Valid">
-        <h1 class="card__header">
-          Дата рождения: {{cert.birthdate.toLocaleDateString()}}
+        <h1 class="card__header" v-if="state === CardState.Processing">
+          Проверка...
         </h1>
-        <h1 class="card__header">
-          Паспорт: {{cert.passport.replace(/\*/g, '\u2022')}}
-        </h1>
-      </div>
 
-      <h1
-        class="card__header"
-        v-if="state === CardState.Invalid"
-        v-text="errorStr"
-      />
+        <div class="card__multiline" v-if="state === CardState.Valid">
+          <h1 class="card__header">
+            Дата рождения: {{cert.birthdate.toLocaleDateString()}}
+          </h1>
+          <h1 class="card__header">
+            Паспорт: {{cert.passport.replace(/\*/g, '\u2022')}}
+          </h1>
+        </div>
 
-      <div class="card__multiline" v-if="state === CardState.Warning">
-        <h1 class="card__header">Не удалось проверить</h1>
-        <h2 class="card__subheader" v-text="errorStr"/>
+        <h1
+          class="card__header"
+          v-if="state === CardState.Invalid"
+          v-text="errorStr"
+        />
+
+        <div class="card__multiline" v-if="state === CardState.Warning">
+          <h1 class="card__header">Не удалось проверить</h1>
+          <h2 class="card__subheader" v-text="errorStr"/>
+        </div>
       </div>
     </div>
   </div>
@@ -46,12 +48,6 @@
   position: absolute;
   top: 0;
   left: 0;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 24px;
 
   padding: 24px;
   box-sizing: border-box;
@@ -72,11 +68,28 @@
   transition: opacity 0.3s ease-in-out;
 }
 
-.card__overlay-hidden {
+.card__items {
+  width: 100%;
+  height: 100%;
+
+  transition: transform 0.5s ease-in-out;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 24px;
+}
+
+.card_dismissed .card__overlay {
   opacity: 0;
 }
 
-.card__dismiss {
+.card_dismissed .card__items {
+  transform: translateY(100vh);
+}
+
+.card__dismiss-btn {
   background: none;
   border: none;
   color: white;
@@ -96,8 +109,7 @@
   gap: 16px;
 
   transition: background 0.2s ease-in-out,
-              color 0.2s ease-in-out,
-              transform 0.5s ease-in-out;
+              color 0.2s ease-in-out;
 
   box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.25),
               0px 2px 12px rgba(0, 0, 0, 0.25),
@@ -129,11 +141,7 @@
 .card__sheet_valid { background: var(--positive) }
 .card__sheet_invalid { background: var(--negative) }
 .card__sheet_warning { background: var(--warning) }
-
-.card__sheet_dismissed {
-  background: transparent;
-  transform: translateY(100vh);
-}
+.card__sheet_dismissed { background: transparent; }
 
 .card__header {
   font-weight: 500;
@@ -208,9 +216,9 @@ export default {
     sheetClass () {
       return `card__sheet card__sheet_${cardClass[this.state]}`
     },
-    overlayClass () {
-      if (this.state === CardState.Dismissed) return 'card__overlay card__overlay-hidden'
-      else return 'card__overlay'
+    containerClass () {
+      if (this.state === CardState.Dismissed) return 'card card_dismissed'
+      else return 'card'
     },
     cardIcon () {
       return cardIcon[this.state]

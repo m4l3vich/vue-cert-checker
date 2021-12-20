@@ -39,7 +39,6 @@
   overflow: hidden;
   border-radius: 99px;
 
-  transform: translateY(0px);
   transition: transform 0.3s ease-in-out;
 
   background: white;
