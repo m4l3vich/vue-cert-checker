@@ -1,8 +1,11 @@
 <template>
   <div class="error">
+    <slot/>
     <h1 class="error__title" v-text="title"/>
-    <h2 class="error__subtitle" v-text="subtitle"/>
-    <button class="error__btn" @click="action">Перезапустить</button>
+    <h2 class="error__body" v-text="body"/>
+    <slot name="button">
+      <button class="error__btn" @click="action" v-text="actionLabel"/>
+    </slot>
   </div>
 </template>
 
@@ -22,7 +25,7 @@
   margin: 0;
 }
 
-.error__subtitle {
+.error__body {
   font-size: 14px;
   font-weight: 400;
   margin: 0;
@@ -59,7 +62,11 @@
 export default {
   props: {
     title: String,
-    subtitle: String,
+    body: String,
+    actionLabel: {
+      type: String,
+      default: 'Перезапустить'
+    },
     action: {
       type: Function,
       default: () => window.location.reload()
