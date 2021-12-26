@@ -14,7 +14,6 @@
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
-    "vue-worker": "^1.2.1",
     "zbar.wasm": "^2.1.1"
   },
   "devDependencies": {
