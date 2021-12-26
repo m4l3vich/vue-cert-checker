@@ -11,10 +11,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="noscript.css" rel="stylesheet">
   </head>
   <body>
     <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+      <div class="noscript">
+        <h1 class="noscript__title">JavaScript отключён</h1>
+        <h2 class="noscript__subtitle">Для работы приложения требуется поддержка JavaScript. Включите JavaScript в браузере и перезапустите приложение.</h2>
+        <a class="noscript__btn" href=".">Перезапустить</a>
+      </div>
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
