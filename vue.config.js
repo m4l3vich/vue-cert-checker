@@ -16,6 +16,9 @@ module.exports = {
     themeColor: '#000000',
     msTileColor: '#0085FF',
     appleMobileWebAppCapable: 'yes',
-    appleMobileWebAppStatusBarStyle: 'black'
+    appleMobileWebAppStatusBarStyle: 'white',
+    manifestOptions: {
+      short_name: 'Сканер'
+    }
   }
 }
