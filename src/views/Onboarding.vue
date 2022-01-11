@@ -92,6 +92,7 @@ export default {
   }),
 
   beforeCreate () {
+    delete localStorage.passed
     window.addEventListener('beforeinstallprompt', e => {
       this.installPrompt = e
     })
@@ -141,8 +142,8 @@ export default {
       this.anim.playSegments([start, end], true)
     },
 
-    onTutorialComplete () {
-      if (this.installPrompt) return this.installPrompt.prompt()
+    async onTutorialComplete () {
+      if (this.installPrompt) await this.installPrompt.prompt()
 
       localStorage.passed = 'true'
       this.$router.push('/scanner')

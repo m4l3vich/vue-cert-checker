@@ -54,10 +54,6 @@ const AppState = {
   ReaderProcessing: 3
 }
 
-function isRunningStandalone () {
-  return (window.matchMedia('(display-mode: standalone)').matches)
-}
-
 export default {
   components: { Spinner, FullscreenMsg, Reader, ReaderFunctions, ProcessingCard },
   data: () => ({
@@ -70,10 +66,6 @@ export default {
   beforeCreate () {
     const vh = window.innerHeight * 0.01
     document.documentElement.style.setProperty('--vh', `${vh}px`)
-
-    if (!isRunningStandalone() && localStorage.passed !== 'true') {
-      this.$router.replace('/')
-    }
   },
 
   methods: {
