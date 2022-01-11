@@ -120,10 +120,9 @@ export default {
 
     const standalone = window.matchMedia('(display-mode: standalone)')
 
-    if (standalone.matches) this.onAppInstalled()
-    window.addEventListener('appinstalled', () => this.onAppInstalled())
+    if (standalone.matches) this.openScanner()
     standalone.addEventListener('change', evt => {
-      if (evt.matches) this.onAppInstalled()
+      if (evt.matches) this.openScanner()
     })
 
     this.anim.addEventListener('DOMLoaded', () =>
@@ -155,7 +154,7 @@ export default {
       this.onAppInstalled()
     },
 
-    onAppInstalled () {
+    openScanner () {
       localStorage.passed = 'true'
       this.$router.push('/scanner')
     },
