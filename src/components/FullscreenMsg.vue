@@ -14,6 +14,7 @@
   .error {
     width: 100vw;
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
   }
 }
 
@@ -21,6 +22,7 @@
   .error {
     width: 500px;
     height: min(100vh, 600px);
+    height: min(calc(var(--vh, 1vh) * 100), 600px);
     margin: auto;
   }
 }

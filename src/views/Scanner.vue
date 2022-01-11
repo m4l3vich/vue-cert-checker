@@ -63,11 +63,6 @@ export default {
     url: null
   }),
 
-  beforeCreate () {
-    const vh = window.innerHeight * 0.01
-    document.documentElement.style.setProperty('--vh', `${vh}px`)
-  },
-
   methods: {
     async onReaderErr (code) {
       this.state = AppState.Errored
