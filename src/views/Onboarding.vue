@@ -1,9 +1,17 @@
 <template>
   <div id="onboarding">
-    <FullscreenMsg :title="title" :body="body">
-      <template v-slot:button>
-        <button @click="onTutorialComplete" class="complete-button">
-          Открыть сканер
+    <FullscreenMsg :title="title" :body="body" actionLabel="Далее" @click="onNextClick">
+      <div id="onboarding-anim"/>
+      <template v-slot:button v-if="isLast">
+        <a class="author-link" href="https://m4l3vich.ru/" target="_blank">
+          Made with 🖤 and open source
+        </a>
+
+        <button @click="onTutorialComplete" class="complete-button" v-if="installPrompt">
+          Установить приложение
+        </button>
+        <button @click="onTutorialComplete" class="complete-button" v-else>
+          Открыть без установки
         </button>
       </template>
     </FullscreenMsg>
@@ -22,9 +30,10 @@
 }
 
 .complete-button {
-  padding: 8px 28px;
+  padding: 12px 28px;
   border: none;
   border-radius: 100px;
+  width: 100%;
 
   cursor: pointer;
   transition: opacity 0.2s, background 0.1s;
@@ -46,51 +55,107 @@
   opacity: 1;
   background: rgba(47, 168, 255, 0.3);
 }
+
+.author-link {
+  text-decoration: none;
+  font-size: 10px;
+  text-align: center;
+  letter-spacing: 0.05em;
+  text-decoration-line: underline;
+  text-transform: uppercase;
+  color: #000000;
+  opacity: 0.5;
+}
 </style>
 
 <script>
+import lottie from 'lottie-web'
 import FullscreenMsg from '../components/FullscreenMsg.vue'
+import anim from '../assets/anim.json'
+import messages from '../lib/onboarding_messages.json'
 
-const messages = [{
-  title: 'Отсканируйте QR-код',
-  body: 'Наведите камеру на QR-код сертификата для начала проверки.'
-}, {
-  title: 'Подождите',
-  body: 'Приложение проверит корректность QR-кода, а также запросит информацию о сертификате из Госуслуг. Это занимает несколько секунд.'
-}, {
-  title: 'Корректный сертификат',
-  body: 'Если сертификат корректен, цвет карточки изменится на зелёный, а также будет отображена информация о владельце сертификата (дата рождения и часть номера паспорта)'
-}, {
-  title: 'Некорректный сертификат',
-  body: 'Если сертификат некорректен (истёк срок действия, сертификат не существует) или QR-код не содержит данных о сертификате, цвет карточки изменится на красный, а также будет отображена информация об ошибке.'
-}, {
-  title: 'Ошибка при проверке',
-  body: 'Если при проверке возникнет ошибка, не связанная с сертификатом, цвет карточки станет оранжевым, а также будет показана причина возникновения ошибки.'
-}, {
-  title: 'Сканер сертификатов',
-  body: 'Это приложение является открытым решением для проверки сертификатов COVID-19 и никаким образом не связано с Госуслугами.'
-}]
+const ANIM_FRAMERATE = 60
+const ANIM_TRANSITION_SEC = 2
+const ANIM_LOOP_SEC = 2
+const ANIM_TOTAL_SEC = ANIM_TRANSITION_SEC + ANIM_LOOP_SEC
 
 export default {
   components: { FullscreenMsg },
 
   data: () => ({
-    index: 0
+    index: 0,
+    count: messages.length,
+    transition: true,
+    anim: null,
+
+    installPrompt: null
   }),
 
   beforeCreate () {
-    if (localStorage.tutorial === 'passed') return this.$router.push('/scanner')
+    window.addEventListener('beforeinstallprompt', e => {
+      this.installPrompt = e
+    })
+  },
+
+  async mounted () {
+    this.anim = lottie.loadAnimation({
+      animationData: anim,
+      container: document.getElementById('onboarding-anim'),
+      loop: true,
+      autoplay: false,
+      initialSegment: [
+        0, ANIM_TRANSITION_SEC * ANIM_FRAMERATE
+      ],
+
+      rendererSettings: {
+        filterSize: {
+          width: '200%',
+          height: '200%',
+          x: '-50%',
+          y: '-50%'
+        }
+      }
+    })
+
+    this.anim.addEventListener('DOMLoaded', () =>
+      setTimeout(() => this.anim.play(), 500)
+    )
+
+    this.anim.addEventListener('loopComplete', this.onLoopComplete)
   },
 
   computed: {
     title () { return messages[this.index].title },
-    body () { return messages[this.index].body }
+    body () { return messages[this.index].body },
+    isLast () { return this.index + 1 === messages.length }
   },
 
   methods: {
+    onNextClick () {
+      if (this.transition) return
+      this.transition = true
+      this.index++
+
+      const start = this.index * ANIM_TOTAL_SEC * ANIM_FRAMERATE
+      const end = start + (ANIM_TRANSITION_SEC * ANIM_FRAMERATE)
+      this.anim.playSegments([start, end], true)
+    },
+
     onTutorialComplete () {
-      localStorage.tutorial = 'passed'
+      if (this.installPrompt) return this.installPrompt.prompt()
+
+      localStorage.passed = 'true'
       this.$router.push('/scanner')
+    },
+
+    onLoopComplete () {
+      if (!this.transition) return
+
+      const offset = this.index * ANIM_TOTAL_SEC * ANIM_FRAMERATE
+      const start = offset + (ANIM_TRANSITION_SEC * ANIM_FRAMERATE)
+      const end = start + (ANIM_LOOP_SEC * ANIM_FRAMERATE)
+      this.transition = false
+      this.anim.playSegments([start, end], true)
     }
   }
 }
