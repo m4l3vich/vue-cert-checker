@@ -151,8 +151,8 @@ export default {
     },
 
     async onTutorialComplete () {
-      if (this.installPrompt) await this.installPrompt.prompt()
-      return this.onAppInstalled()
+      if (this.installPrompt) return this.installPrompt.prompt()
+      this.onAppInstalled()
     },
 
     onAppInstalled () {
