@@ -18,6 +18,7 @@ module.exports = {
     appleMobileWebAppCapable: 'yes',
     appleMobileWebAppStatusBarStyle: 'white',
     manifestOptions: {
+      start_url: '/scanner',
       short_name: 'Сканер'
     }
   }
