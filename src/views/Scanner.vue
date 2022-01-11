@@ -56,12 +56,20 @@ const AppState = {
 
 export default {
   components: { Spinner, FullscreenMsg, Reader, ReaderFunctions, ProcessingCard },
+
   data: () => ({
     AppState,
     state: AppState.Loading,
     error: CameraErrorStr[CameraErrCode.Unknown],
     url: null
   }),
+
+  beforeCreate () {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    const { passed } = localStorage
+
+    if (!isStandalone && passed !== 'true') return this.$router.go('/')
+  },
 
   methods: {
     async onReaderErr (code) {

@@ -11,7 +11,7 @@
           Установить приложение
         </button>
         <button @click="onTutorialComplete" class="complete-button" v-else>
-          Открыть без установки
+          Открыть сканер
         </button>
       </template>
     </FullscreenMsg>
@@ -118,7 +118,14 @@ export default {
       }
     })
 
+    const standalone = window.matchMedia('(display-mode: standalone)')
+
+    if (standalone.matches) this.onAppInstalled()
     window.addEventListener('appinstalled', () => this.onAppInstalled())
+    standalone.addEventListener('change', evt => {
+      if (evt.matches) this.onAppInstalled()
+    })
+
     this.anim.addEventListener('DOMLoaded', () =>
       setTimeout(() => this.anim.play(), 500)
     )
