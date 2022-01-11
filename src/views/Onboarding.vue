@@ -118,6 +118,7 @@ export default {
       }
     })
 
+    window.addEventListener('appinstalled', () => this.onAppInstalled())
     this.anim.addEventListener('DOMLoaded', () =>
       setTimeout(() => this.anim.play(), 500)
     )
@@ -144,7 +145,10 @@ export default {
 
     async onTutorialComplete () {
       if (this.installPrompt) await this.installPrompt.prompt()
+      return this.onAppInstalled()
+    },
 
+    onAppInstalled () {
       localStorage.passed = 'true'
       this.$router.push('/scanner')
     },
