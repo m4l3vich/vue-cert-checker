@@ -20,6 +20,9 @@ module.exports = {
     manifestOptions: {
       start_url: '/scanner',
       short_name: 'Сканер'
+    },
+    workboxOptions: {
+      exclude: [/_redirects/]
     }
   }
 }
