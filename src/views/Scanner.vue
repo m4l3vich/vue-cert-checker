@@ -1,7 +1,9 @@
 <template>
   <div id="scanner">
     <Spinner v-if="state === AppState.Loading"/>
-    <FullscreenMsg v-if="state === AppState.Errored" :title="error.title" :body="error.body"/>
+    <FullscreenMsg v-if="state === AppState.Errored" :title="error.title" :body="error.body" @click="onReload">
+      <div id="camera-error-anim"/>
+    </FullscreenMsg>
 
     <Reader
       v-if="state !== AppState.Errored"
@@ -31,12 +33,19 @@
 </style>
 
 <script>
+import lottie from 'lottie-web'
+import animationData from '../assets/camera-error.json'
 import Spinner from '../components/Spinner.vue'
 import FullscreenMsg from '../components/FullscreenMsg.vue'
 import Reader from '../components/Reader.vue'
 import ReaderFunctions from '../components/ReaderFunctions.vue'
 import ProcessingCard from '../components/ProcessingCard.vue'
-import { CameraErrCode } from '../lib/camera.js'
+import { CameraErrCode, CameraErrorStr } from '../lib/camera.js'
+
+const ANIM_FRAMERATE = 60
+const ANIM_TRANSITION_SEC = 2
+const ANIM_LOOP_SEC = 2
+const ANIM_TOTAL_SEC = ANIM_TRANSITION_SEC + ANIM_LOOP_SEC
 
 const AppState = {
   Loading: 0,
@@ -45,27 +54,8 @@ const AppState = {
   ReaderProcessing: 3
 }
 
-const CameraErrorStr = {
-  [CameraErrCode.OldBrowser]: {
-    title: 'Ваш браузер устарел',
-    body: 'Обновите браузер до последней версии и повторите попытку.'
-  },
-  [CameraErrCode.PermissionDenied]: {
-    title: 'Нет доступа к камере',
-    body: 'Вы запретили доступ к камере. Для использования приложения разрешите доступ к камере.'
-  },
-  [CameraErrCode.NoCamera]: {
-    title: 'Камера не найдена',
-    body: 'На вашем устройстве не найдена камера. Проверьте её подключение и повторите попытку.'
-  },
-  [CameraErrCode.CameraBusy]: {
-    title: 'Камера уже используется',
-    body: 'Другое приложение или веб-страница уже использует камеру вашего устройства. Закройте это приложение и повторите попытку.'
-  },
-  [CameraErrCode.Unknown]: {
-    title: 'Ошибка доступа к камере',
-    body: 'Не удалось получить доступ к камере из-за неизвестной ошибки. Проверьте подключение камеры и разрешите приложению её использование.'
-  }
+function isRunningStandalone () {
+  return (window.matchMedia('(display-mode: standalone)').matches)
 }
 
 export default {
@@ -80,12 +70,42 @@ export default {
   beforeCreate () {
     const vh = window.innerHeight * 0.01
     document.documentElement.style.setProperty('--vh', `${vh}px`)
+
+    if (!isRunningStandalone() && localStorage.passed !== 'true') {
+      this.$router.replace('/')
+    }
   },
 
   methods: {
-    onReaderErr (code) {
+    async onReaderErr (code) {
       this.state = AppState.Errored
       this.error = CameraErrorStr[code]
+
+      await this.$nextTick()
+      const anim = lottie.loadAnimation({
+        container: document.getElementById('camera-error-anim'),
+        animationData,
+        loop: true,
+        autoplay: false,
+        initialSegment: [
+          0, ANIM_TRANSITION_SEC * ANIM_FRAMERATE
+        ]
+      })
+
+      let transition = true
+
+      anim.addEventListener('DOMLoaded', () =>
+        setTimeout(() => anim.play(), 500)
+      )
+
+      anim.addEventListener('loopComplete', () => {
+        if (!transition) return
+        transition = false
+        anim.playSegments([
+          ANIM_TRANSITION_SEC * ANIM_FRAMERATE,
+          ANIM_TOTAL_SEC * ANIM_FRAMERATE
+        ], true)
+      })
     },
 
     onReaderInit () {
@@ -100,6 +120,10 @@ export default {
     onCardDismiss () {
       this.state = AppState.ReaderAvailable
       this.url = null
+    },
+
+    onReload () {
+      window.location.reload()
     }
   }
 }

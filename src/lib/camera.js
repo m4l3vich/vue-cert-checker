@@ -26,6 +26,29 @@ const CameraErrorMsg = {
   [CameraErrCode.Unknown]: 'Unknown error occured'
 }
 
+export const CameraErrorStr = {
+  [CameraErrCode.OldBrowser]: {
+    title: 'Ваш браузер устарел',
+    body: 'Обновите браузер до последней версии и повторите попытку.'
+  },
+  [CameraErrCode.PermissionDenied]: {
+    title: 'Нет доступа к камере',
+    body: 'Вы запретили доступ к камере. Для использования приложения разрешите доступ к камере.'
+  },
+  [CameraErrCode.NoCamera]: {
+    title: 'Камера не найдена',
+    body: 'На вашем устройстве не найдена камера. Проверьте её подключение и повторите попытку.'
+  },
+  [CameraErrCode.CameraBusy]: {
+    title: 'Камера уже используется',
+    body: 'Другое приложение или веб-страница уже использует камеру вашего устройства. Закройте это приложение и повторите попытку.'
+  },
+  [CameraErrCode.Unknown]: {
+    title: 'Ошибка доступа к камере',
+    body: 'Не удалось получить доступ к камере из-за неизвестной ошибки. Проверьте подключение камеры и разрешите приложению её использование.'
+  }
+}
+
 export async function initCamera (selector, dimensions) {
   const video = document.querySelector(selector)
   if (!(video instanceof HTMLVideoElement)) {
