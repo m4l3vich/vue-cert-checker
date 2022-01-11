@@ -2,21 +2,38 @@
   <div class="error">
     <slot/>
     <h1 class="error__title" v-text="title"/>
-    <h2 class="error__body" v-text="body"/>
+    <p class="error__body" v-text="body"/>
     <slot name="button">
-      <button class="error__btn" @click="action" v-text="actionLabel"/>
+      <button class="error__btn" @click="e => $emit('click', e)" v-text="actionLabel"/>
     </slot>
   </div>
 </template>
 
 <style>
+@media screen and (max-width: 600px) {
+  .error {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .error {
+    width: 500px;
+    height: min(100vh, 600px);
+    margin: auto;
+  }
+}
+
 .error {
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   justify-content: center;
   align-items: center;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .error__title {
@@ -28,13 +45,17 @@
 .error__body {
   font-size: 14px;
   font-weight: 400;
+  line-height: 150%;
+  flex: 1 0 auto;
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .error__btn {
-  padding: 8px 28px;
+  padding: 12px 28px;
   border: none;
   border-radius: 100px;
+  width: 100%;
 
   cursor: pointer;
   transition: opacity 0.2s, background 0.1s;
@@ -66,10 +87,6 @@ export default {
     actionLabel: {
       type: String,
       default: 'Перезапустить'
-    },
-    action: {
-      type: Function,
-      default: () => window.location.reload()
     }
   }
 }
