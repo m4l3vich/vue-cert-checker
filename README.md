@@ -16,7 +16,8 @@
   </a>
 </center>
 
-Последняя версия приложения всегда доступна здесь: https://qrcode.m4l3vich.ru
+Последняя версия приложения всегда доступна здесь: https://qrcode.m4l3vich.ru   
+Макет интерфейса в Figma: https://www.figma.com/file/a9uER6ADHqwp2GmsyqmrX9/CertChecker
 
 Для проверки сертификатов используется модуль `gosuslugi-cert-checker` ([GitHub](https://github.com/m4l3vich/gosuslugi-cert-checker), [NPM](https://npmjs.org/package/gosuslugi-cert-checker))
 
