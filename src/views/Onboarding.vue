@@ -87,7 +87,6 @@ export default {
     count: messages.length,
     transition: true,
     anim: null,
-
     installPrompt: null
   }),
 
@@ -118,6 +117,7 @@ export default {
       }
     })
 
+    // Open scanner when in standalone mode
     const standalone = window.matchMedia('(display-mode: standalone)')
 
     if (standalone.matches) this.openScanner()
@@ -150,8 +150,10 @@ export default {
     },
 
     async onTutorialComplete () {
-      if (this.installPrompt) return this.installPrompt.prompt()
-      this.onAppInstalled()
+      if (!this.installPrompt) return this.openScanner()
+
+      await this.installPrompt.prompt()
+      this.installPrompt = null
     },
 
     openScanner () {

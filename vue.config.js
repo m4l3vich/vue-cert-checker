@@ -19,7 +19,8 @@ module.exports = {
     appleMobileWebAppStatusBarStyle: 'white',
     manifestOptions: {
       start_url: '/scanner',
-      short_name: 'Сканер'
+      short_name: 'Сканер',
+      background_color: '#FFFFFF'
     },
     workboxOptions: {
       exclude: [/_redirects/]
